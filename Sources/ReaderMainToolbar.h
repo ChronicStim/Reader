@@ -47,11 +47,28 @@
 
 @property (nonatomic, weak, readwrite) id <ReaderMainToolbarDelegate> delegate;
 
+- (instancetype)initWithFrame:(CGRect)frame;
+
 - (instancetype)initWithFrame:(CGRect)frame document:(ReaderDocument *)document;
 
 - (void)setBookmarkState:(BOOL)state;
 
+- (void)updateBookmarkImage;
+
 - (void)hideToolbar;
+
 - (void)showToolbar;
+
+- (void)doneButtonTapped:(UIButton *)button;
+
+- (void)thumbsButtonTapped:(UIButton *)button;
+
+- (void)exportButtonTapped:(UIButton *)button;
+
+- (void)printButtonTapped:(UIButton *)button;
+
+- (void)emailButtonTapped:(UIButton *)button;
+
+- (void)markButtonTapped:(UIButton *)button;
 
 @end

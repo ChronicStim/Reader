@@ -9,5 +9,8 @@
 #import "ReaderViewController.h"
 
 @interface CPTReaderViewController : ReaderViewController
+{
+    
+}
 
 @end
