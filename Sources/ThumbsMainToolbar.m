@@ -25,16 +25,29 @@
 
 #import "ReaderConstants.h"
 #import "ThumbsMainToolbar.h"
+#import "UIGlossyButton.h"
+
+@interface ThumbsMainToolbar ()
+
+@property (nonatomic, readwrite, strong) UIGlossyButton *thumbsButton;
+@property (nonatomic, readwrite, strong) UIGlossyButton *markButton;
+
+@end
 
 @implementation ThumbsMainToolbar
-
+{
+    UIImage *thumbsImageN;
+    UIImage *thumbsImageY;
+    UIImage *markImageN;
+    UIImage *markImageY;
+}
 #pragma mark - Constants
 
 #define BUTTON_X 8.0f
 #define BUTTON_Y 8.0f
 
 #define BUTTON_SPACE 8.0f
-#define BUTTON_HEIGHT 30.0f
+#define BUTTON_HEIGHT 34.0f
 
 #define BUTTON_FONT_SIZE 15.0f
 #define TEXT_BUTTON_PADDING 24.0f
@@ -61,12 +74,21 @@
 	if ((self = [super initWithFrame:frame]))
 	{
 		CGFloat viewWidth = self.bounds.size.width; // Toolbar view width
-
+        CGFloat iconButtonWidth = ICON_BUTTON_WIDTH; // To start with, but will update to actual width of UIGlossyButtons
+        
 #if (READER_FLAT_UI == TRUE) // Option
-		UIImage *buttonH = nil; UIImage *buttonN = nil;
+        self.backgroundColor = READER_TOOLBAR_PRIMARY_TINT;
 #else
 		UIImage *buttonH = [[UIImage imageNamed:@"Reader-Button-H"] stretchableImageWithLeftCapWidth:5 topCapHeight:0];
 		UIImage *buttonN = [[UIImage imageNamed:@"Reader-Button-N"] stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+        {
+            self.backgroundColor = READER_TOOLBAR_PRIMARY_TINT;
+            CAGradientLayer *layer = (CAGradientLayer *)self.layer;
+            UIColor *liteColor = READER_TOOLBAR_SECONDARY_TINT;
+            UIColor *darkColor = READER_TOOLBAR_PRIMARY_TINT;
+            layer.colors = [NSArray arrayWithObjects:(id)liteColor.CGColor, (id)darkColor.CGColor, nil];
+        }
+
 #endif // end of READER_FLAT_UI Option
 
 		BOOL largeDevice = ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
@@ -77,53 +99,57 @@
 
 		CGFloat leftButtonX = BUTTON_X; // Left-side button start X position
 
-		UIFont *doneButtonFont = [UIFont systemFontOfSize:BUTTON_FONT_SIZE];
-		NSString *doneButtonText = NSLocalizedString(@"Done", @"button");
-        NSDictionary *textAttributes = @{doneButtonFont:NSFontAttributeName};
-		CGSize doneButtonSize = [doneButtonText sizeWithAttributes:textAttributes];
-		CGFloat doneButtonWidth = (doneButtonSize.width + TEXT_BUTTON_PADDING);
-
-		UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-		doneButton.frame = CGRectMake(leftButtonX, BUTTON_Y, doneButtonWidth, BUTTON_HEIGHT);
-		[doneButton setTitleColor:[UIColor colorWithWhite:0.0f alpha:1.0f] forState:UIControlStateNormal];
-		[doneButton setTitleColor:[UIColor colorWithWhite:1.0f alpha:1.0f] forState:UIControlStateHighlighted];
-		[doneButton setTitle:doneButtonText forState:UIControlStateNormal]; doneButton.titleLabel.font = doneButtonFont;
-		[doneButton addTarget:self action:@selector(doneButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-		[doneButton setBackgroundImage:buttonH forState:UIControlStateHighlighted];
-		[doneButton setBackgroundImage:buttonN forState:UIControlStateNormal];
-		doneButton.autoresizingMask = UIViewAutoresizingNone;
-		//doneButton.backgroundColor = [UIColor grayColor];
-		doneButton.exclusiveTouch = YES;
-
-		[self addSubview:doneButton]; //leftButtonX += (doneButtonWidth + buttonSpacing);
-
-		titleX += (doneButtonWidth + buttonSpacing); titleWidth -= (doneButtonWidth + buttonSpacing);
+        UIGlossyButton *doneButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"iconDone"] highlighted:NO forTarget:self selector:@selector(doneButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        iconButtonWidth = doneButton.bounds.size.width;
+        CGRect doneButtonRect = CGRectMake(leftButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+        doneButton.frame = doneButtonRect;
+        doneButton.autoresizingMask = UIViewAutoresizingNone;
+        doneButton.exclusiveTouch = YES;
+        
+        [self addSubview:doneButton];
+        
+        CGFloat rightButtonX = viewWidth; // Right-side buttons start X position
 
 #if (READER_BOOKMARKS == TRUE) // Option
+        
+        titleX += (iconButtonWidth + buttonSpacing);
+        titleWidth -= (iconButtonWidth + buttonSpacing);
+        
+        markImageN = [UIImage imageNamed:@"iconBookmarkDisabled"]; // N image
+        markImageY = [UIImage imageNamed:@"iconBookmarkEnabled"]; // Y image
+        UIGlossyButton *flagButton = [UIGlossyButton glossyButtonWithTitle:nil image:markImageN highlighted:NO forTarget:self selector:@selector(viewModeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        
+        iconButtonWidth = flagButton.bounds.size.width;
+        rightButtonX -= (iconButtonWidth + buttonSpacing); // Position
+        CGRect flagButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+        flagButton.frame = flagButtonFrame;
+        flagButton.exclusiveTouch = YES;
+        
+        [self addSubview:flagButton];
+        titleWidth -= (iconButtonWidth + buttonSpacing);
+        
+        self.markButton = flagButton;
+        self.markButton.tag = 0;
+#endif
 
-		CGFloat showControlX = (viewWidth - (SHOW_CONTROL_WIDTH + buttonSpacing));
+        titleX += (iconButtonWidth + buttonSpacing);
+        titleWidth -= (iconButtonWidth + buttonSpacing);
 
-		UIImage *thumbsImage = [UIImage imageNamed:@"Reader-Thumbs"];
-		UIImage *bookmarkImage = [UIImage imageNamed:@"Reader-Mark-Y"];
-		NSArray *buttonItems = [NSArray arrayWithObjects:thumbsImage, bookmarkImage, nil];
-
-		BOOL useTint = [self respondsToSelector:@selector(tintColor)]; // iOS 7 and up
-
-		UISegmentedControl *showControl = [[UISegmentedControl alloc] initWithItems:buttonItems];
-		showControl.frame = CGRectMake(showControlX, BUTTON_Y, SHOW_CONTROL_WIDTH, BUTTON_HEIGHT);
-		showControl.tintColor = (useTint ? [UIColor blackColor] : [UIColor colorWithWhite:0.8f alpha:1.0f]);
-		showControl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-		showControl.selectedSegmentIndex = 0; // Default segment index
-		//showControl.backgroundColor = [UIColor grayColor];
-		showControl.exclusiveTouch = YES;
-
-		[showControl addTarget:self action:@selector(showControlTapped:) forControlEvents:UIControlEventValueChanged];
-
-		[self addSubview:showControl];
-
-		titleWidth -= (SHOW_CONTROL_WIDTH + buttonSpacing);
-
-#endif // end of READER_BOOKMARKS Option
+        thumbsImageN = [UIImage imageNamed:@"iconThumbnailViewDisabled"]; // N image
+        thumbsImageY = [UIImage imageNamed:@"iconThumbnailView"]; // Y image
+        UIGlossyButton *newThumbButton = [UIGlossyButton glossyButtonWithTitle:nil image:thumbsImageY highlighted:NO forTarget:self selector:@selector(viewModeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        
+        iconButtonWidth = newThumbButton.bounds.size.width;
+        rightButtonX -= (iconButtonWidth + buttonSpacing); // Position
+        
+        CGRect buttonRect = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+        newThumbButton.frame = buttonRect;
+        newThumbButton.autoresizingMask = UIViewAutoresizingNone;
+        newThumbButton.exclusiveTouch = YES;
+        
+        [self addSubview:newThumbButton];
+        self.thumbsButton = newThumbButton;
+        self.thumbsButton.tag = 1;
 
 		if (largeDevice == YES) // Show document filename in toolbar
 		{
@@ -152,14 +178,61 @@
 	return self;
 }
 
-#pragma mark - UISegmentedControl action methods
-
-- (void)showControlTapped:(UISegmentedControl *)control
+-(UIImage *)imageForViewModeButton:(UIGlossyButton *)viewModeButton state:(BOOL)state;
 {
-	[delegate tappedInToolbar:self showControl:control];
+    UIImage *buttonImage = nil;
+    if ([viewModeButton isEqual:self.thumbsButton]) {
+        if (state) {
+            buttonImage = thumbsImageY;
+        } else {
+            buttonImage = thumbsImageN;
+        }
+    } else if ([viewModeButton isEqual:self.markButton]){
+        if (state) {
+            buttonImage = markImageY;
+        } else {
+            buttonImage = markImageN;
+        }
+    }
+    return buttonImage;
 }
 
-#pragma mark - UIButton action methods
+- (void)setViewModeButton:(UIGlossyButton *)viewModeButton state:(BOOL)state;
+{
+    if (state != viewModeButton.tag) {
+        if (self.hidden == NO) // Only if toolbar is visible
+        {
+            UIImage *image = [self imageForViewModeButton:viewModeButton state:state];
+            
+            [viewModeButton replaceExistingImageWith:image animate:YES duration:0.25];
+        }
+
+        viewModeButton.tag = state; // Update bookmarked state tag
+    }
+    
+    if (viewModeButton.enabled == NO) viewModeButton.enabled = YES;
+}
+
+- (void)updateImageForViewModeButton:(UIGlossyButton *)viewModeButton;
+{
+    if (viewModeButton.tag != NSIntegerMin) // Valid tag
+    {
+        BOOL state = viewModeButton.tag; // Bookmarked state
+        
+        UIImage *image = [self imageForViewModeButton:viewModeButton state:state];
+        
+        [viewModeButton replaceExistingImageWith:image animate:YES duration:0.25];
+    }
+    
+    if (viewModeButton.enabled == NO) viewModeButton.enabled = YES;
+}
+
+#pragma mark - UIGlossyButton action methods
+
+- (void)viewModeButtonTapped:(UIGlossyButton *)button;
+{
+	[delegate tappedInToolbar:self viewModeButton:button];
+}
 
 - (void)doneButtonTapped:(UIButton *)button
 {

@@ -7,6 +7,9 @@
 //
 
 #import "CPTThumbsViewController.h"
+#import "ReaderDocument.h"
+#import "ReaderConstants.h"
+#import "ThumbsMainToolbar.h"
 
 @implementation CPTThumbsViewController
 

@@ -134,10 +134,10 @@
         
 #if (READER_BOOKMARKS == TRUE) // Option
         
-        rightButtonX -= (iconButtonWidth + buttonSpacing); // Position
-        
         UIGlossyButton *flagButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"iconBookmarkDisabled"] highlighted:NO forTarget:self selector:@selector(markButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        
         iconButtonWidth = flagButton.bounds.size.width;
+        rightButtonX -= (iconButtonWidth + buttonSpacing); // Position
         CGRect flagButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
         flagButton.frame = flagButtonFrame;
         flagButton.exclusiveTouch = YES;

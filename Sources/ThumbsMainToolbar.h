@@ -27,21 +27,25 @@
 
 #import "UIXToolbarView.h"
 
-@class ThumbsMainToolbar;
+@class ThumbsMainToolbar, UIGlossyButton;
 
 @protocol ThumbsMainToolbarDelegate <NSObject>
 
 @required // Delegate protocols
 
 - (void)tappedInToolbar:(ThumbsMainToolbar *)toolbar doneButton:(UIButton *)button;
-- (void)tappedInToolbar:(ThumbsMainToolbar *)toolbar showControl:(UISegmentedControl *)control;
+- (void)tappedInToolbar:(ThumbsMainToolbar *)toolbar viewModeButton:(UIGlossyButton *)button;
 
 @end
 
 @interface ThumbsMainToolbar : UIXToolbarView
 
 @property (nonatomic, weak, readwrite) id <ThumbsMainToolbarDelegate> delegate;
+@property (nonatomic, readonly, strong) UIGlossyButton *thumbsButton;
+@property (nonatomic, readonly, strong) UIGlossyButton *markButton;
 
 - (instancetype)initWithFrame:(CGRect)frame title:(NSString *)title;
+- (void)setViewModeButton:(UIGlossyButton *)viewModeButton state:(BOOL)state;
+- (void)updateImageForViewModeButton:(UIGlossyButton *)viewModeButton;
 
 @end
