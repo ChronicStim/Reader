@@ -29,10 +29,15 @@
 #import "ReaderThumbCache.h"
 #import "ReaderDocument.h"
 #import "UIGlossyButton.h"
+#import "PopupDisplayController.h"
+#import "HelpFirstView.h"
 
 #import <QuartzCore/QuartzCore.h>
 
-@interface ThumbsViewController () <ThumbsMainToolbarDelegate, ReaderThumbsViewDelegate>
+@interface ThumbsViewController () <ThumbsMainToolbarDelegate, ReaderThumbsViewDelegate, PopupDisplayControllerDelegate>
+
+@property (nonatomic, strong) PopupDisplayController *popupDisplayController;
+@property (nonatomic, strong) NSTimer *popupDelayTimer;
 
 @end
 
@@ -282,6 +287,24 @@
 	[delegate dismissThumbsViewController:self]; // Dismiss thumbs display
 }
 
+- (void)tappedInToolbar:(ThumbsMainToolbar *)toolbar helpButton:(UIButton *)button;
+{
+#if (READER_ENABLE_HELP_BUTTON == TRUE) // Option
+    // Display Help for view
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (nil == [defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake]) {
+        [defaults setObject:[NSNumber numberWithBool:YES] forKey:kHelpFirstViewKeyDisplayHelpOnShake];
+        [defaults synchronize];
+    }
+    BOOL showHelpOnShake = [[defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake] boolValue];
+    if (showHelpOnShake) {
+        CGRect helpInitiationPoint = [(UIButton *)button convertRect:[button bounds] toView:self.view];
+        HelpFirstView *helpFirstView = [HelpFirstView sharedHelpFirstView];
+        [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromRect:helpInitiationPoint inView:self.view];
+    }
+#endif // end of READER_ENABLE_HELP_BUTTON Option
+}
+
 #pragma mark - UIThumbsViewDelegate methods
 
 - (NSUInteger)numberOfThumbsInThumbsView:(ReaderThumbsView *)thumbsView
@@ -331,14 +354,107 @@
 
 - (void)thumbsView:(ReaderThumbsView *)thumbsView didPressThumbWithIndex:(NSInteger)index
 {
+#if (READER_BOOKMARKS == TRUE) // Option
+
 	NSInteger page = (showBookmarked ? [[bookmarked objectAtIndex:index] integerValue] : (index + 1));
 
 	if ([document.bookmarks containsIndex:page]) [document.bookmarks removeIndex:page]; else [document.bookmarks addIndex:page];
 
 	updateBookmarked = YES; [thumbsView refreshThumbWithIndex:index]; // Refresh page thumb
+#endif // end of READER_BOOKMARKS Option
+}
+
+#pragma mark - Help Button System Methods
+
+-(PopupDisplayController *)popupDisplayController;
+{
+    if (nil != _popupDisplayController) {
+        return _popupDisplayController;
+    }
+    
+    _popupDisplayController = [[PopupDisplayController alloc] init];
+    [_popupDisplayController setDelegate:self];
+    return _popupDisplayController;
+}
+
+-(void)startPopupDelayTimer;
+{
+    //NSLog(@"Starting Delay Timer");
+    NSDate *fireDate = [[NSDate date] dateByAddingTimeInterval:5];
+    self.popupDelayTimer = [[NSTimer alloc] initWithFireDate:fireDate interval:5 target:self selector:@selector(beginPopupDisplay) userInfo:nil repeats:NO];
+    [[NSRunLoop currentRunLoop] addTimer:self.popupDelayTimer forMode:NSDefaultRunLoopMode];
+}
+
+-(void)beginPopupDisplay;
+{
+    if (nil != _popupDisplayController) {
+        [self performSelectorOnMainThread:@selector(beginPopupDisplayOnMainThread) withObject:nil waitUntilDone:NO];
+    }
+    [self.popupDelayTimer invalidate];
+    self.popupDelayTimer = nil;
+}
+
+-(void)beginPopupDisplayOnMainThread;
+{
+    //NSLog(@"Beginning popup display");
+    [self.popupDisplayController displayUsingTimerInterval:3];
+}
+
+-(void)killPopupDisplayProcesses;
+{
+    // If the delay timer is not NIL, then invalidate it to cancel the popups
+    //NSLog(@"Check if PopupDisplay processes need to be killed.");
+    
+    if (nil != _popupDelayTimer) {
+        //NSLog(@"Killing popupDelayTimer");
+        [self.popupDelayTimer invalidate];
+        _popupDelayTimer = nil;
+    }
+    
+    // If popups are actively being displayed, then terminate the display
+    if (nil != [self.popupDisplayController popupTimer]) {
+        //NSLog(@"Killing popups");
+        [self.popupDisplayController stopDisplayingPopups];
+    }
+}
+
+-(CGRect)locationOfCustomHelpButton;
+{
+    CGRect locationRect = CGRectZero;
+    for (UIGlossyButton *glossyButton in [mainToolbar.toolbarButtons allObjects]) {
+        if (glossyButton.tag == 5005) {
+            locationRect = [glossyButton convertRect:glossyButton.bounds toView:self.view];
+            break;
+        }
+    }
+    return locationRect;
+}
+
+-(void)checkIfHelpFirstViewShouldDisplayForViewKey:(NSString *)viewKey usingForce:(BOOL)useForce;
+{
+    // Display Help for view
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (nil == [defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake]) {
+        [defaults setObject:[NSNumber numberWithBool:YES] forKey:kHelpFirstViewKeyDisplayHelpOnShake];
+        [defaults synchronize];
+    }
+    BOOL showHelpOnShake = [[defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake] boolValue];
+    if (showHelpOnShake) {
+        CGRect helpInitiationPoint = [self locationOfCustomHelpButton];
+        if (CGRectEqualToRect(helpInitiationPoint, CGRectZero)) {
+            helpInitiationPoint = CGRectMake(CGRectGetMidX(self.view.bounds), 0, 1, 1);
+        }
+        HelpFirstView *helpFirstView = [HelpFirstView sharedHelpFirstView];
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            [helpFirstView displayHelpPopoverForViewKey:viewKey forceDisplay:useForce fromRect:helpInitiationPoint inView:self.view];
+        } else {
+            [helpFirstView displayHelpPopoverForViewKey:viewKey forceDisplay:useForce fromController:self];
+        }
+    }
 }
 
 @end
+
 
 #pragma mark -
 

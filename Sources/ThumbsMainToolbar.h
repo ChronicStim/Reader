@@ -36,6 +36,9 @@
 - (void)tappedInToolbar:(ThumbsMainToolbar *)toolbar doneButton:(UIButton *)button;
 - (void)tappedInToolbar:(ThumbsMainToolbar *)toolbar viewModeButton:(UIGlossyButton *)button;
 
+@optional // Delegate protocols - optional
+- (void)tappedInToolbar:(ThumbsMainToolbar *)toolbar helpButton:(UIButton *)button;
+
 @end
 
 @interface ThumbsMainToolbar : UIXToolbarView
@@ -43,6 +46,7 @@
 @property (nonatomic, weak, readwrite) id <ThumbsMainToolbarDelegate> delegate;
 @property (nonatomic, readonly, strong) UIGlossyButton *thumbsButton;
 @property (nonatomic, readonly, strong) UIGlossyButton *markButton;
+@property (nonatomic, strong, readonly) NSMutableSet *toolbarButtons;
 
 - (instancetype)initWithFrame:(CGRect)frame title:(NSString *)title;
 - (void)setViewModeButton:(UIGlossyButton *)viewModeButton state:(BOOL)state;

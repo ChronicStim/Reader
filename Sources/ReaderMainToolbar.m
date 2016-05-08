@@ -30,29 +30,35 @@
 
 #import <MessageUI/MessageUI.h>
 
+@interface ReaderMainToolbar ()
+
+@property (nonatomic, strong, readwrite) NSMutableSet *toolbarButtons;
+
+@end
+
 @implementation ReaderMainToolbar
 {
-	UIGlossyButton *markButton;
-
-	UIImage *markImageN;
+    UIGlossyButton *gbBookmark;
+    
+    UIImage *markImageN;
 	UIImage *markImageY;
 }
 
 #pragma mark - Constants
 
-#define BUTTON_X 8.0f
-#define BUTTON_Y 8.0f
+#define BUTTON_X READER_TOOLBAR_BUTTON_X
+#define BUTTON_Y READER_TOOLBAR_BUTTON_Y
 
-#define BUTTON_SPACE 8.0f
-#define BUTTON_HEIGHT 34.0f
+#define BUTTON_SPACE READER_TOOLBAR_BUTTON_SPACE
+#define BUTTON_HEIGHT READER_TOOLBAR_BUTTON_HEIGHT
 
-#define BUTTON_FONT_SIZE 15.0f
-#define TEXT_BUTTON_PADDING 24.0f
+#define BUTTON_FONT_SIZE READER_TOOLBAR_BUTTON_FONT_SIZE
+#define TEXT_BUTTON_PADDING READER_TOOLBAR_TEXT_BUTTON_PADDING
 
-#define ICON_BUTTON_WIDTH 40.0f
+#define ICON_BUTTON_WIDTH READER_TOOLBAR_ICON_BUTTON_WIDTH
 
-#define TITLE_FONT_SIZE 19.0f
-#define TITLE_HEIGHT 28.0f
+#define TITLE_FONT_SIZE READER_TOOLBAR_TITLE_FONT_SIZE
+#define TITLE_HEIGHT READER_TOOLBAR_TITLE_HEIGHT
 
 #pragma mark - Properties
 
@@ -76,9 +82,6 @@
 #if (READER_FLAT_UI == TRUE) // Option
         self.backgroundColor = READER_TOOLBAR_PRIMARY_TINT;
 #else
-        UIImage *buttonH = [[UIImage imageNamed:@"Reader-Button-H"] stretchableImageWithLeftCapWidth:5 topCapHeight:0];
-        UIImage *buttonN = [[UIImage imageNamed:@"Reader-Button-N"] stretchableImageWithLeftCapWidth:5 topCapHeight:0];
-        
         {
             self.backgroundColor = READER_TOOLBAR_PRIMARY_TINT;
             CAGradientLayer *layer = (CAGradientLayer *)self.layer;
@@ -107,6 +110,8 @@
         doneButton.exclusiveTouch = YES;
         
         [self addSubview:doneButton];
+        [self.toolbarButtons addObject:doneButton];
+        
         leftButtonX += (iconButtonWidth + buttonSpacing);
         
         titleX += (iconButtonWidth + buttonSpacing);
@@ -114,16 +119,39 @@
         
 #endif // end of READER_STANDALONE Option
         
+#if (READER_ENABLE_HELP_BUTTON == TRUE) // Option
+        
+        UIGlossyButton *helpButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"Reader-iconInfo"] highlighted:NO forTarget:self selector:@selector(helpButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        iconButtonWidth = helpButton.bounds.size.width;
+        CGRect helpButtonRect = CGRectMake(leftButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+        helpButton.frame = helpButtonRect;
+        helpButton.autoresizingMask = UIViewAutoresizingNone;
+        helpButton.exclusiveTouch = YES;
+        helpButton.tag = 5005;
+        
+        [self addSubview:helpButton];
+        [self.toolbarButtons addObject:helpButton];
+        
+        leftButtonX += (iconButtonWidth + buttonSpacing);
+        
+        titleX += (iconButtonWidth + buttonSpacing);
+        titleWidth -= (iconButtonWidth + buttonSpacing);
+        
+#endif // end of READER_ENABLE_HELP_BUTTON Option
+        
 #if (READER_ENABLE_THUMBS == TRUE) // Option
         
         UIGlossyButton *thumbsButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"iconThumbnailView"] highlighted:NO forTarget:self selector:@selector(thumbsButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
         iconButtonWidth = thumbsButton.bounds.size.width;
-        CGRect buttonRect = CGRectMake(leftButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
-        thumbsButton.frame = buttonRect;
+        CGRect thumbButtonRect = CGRectMake(leftButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+        thumbsButton.frame = thumbButtonRect;
         thumbsButton.autoresizingMask = UIViewAutoresizingNone;
         thumbsButton.exclusiveTouch = YES;
         
-        [self addSubview:thumbsButton]; //leftButtonX += (iconButtonWidth + buttonSpacing);
+        [self addSubview:thumbsButton];
+        [self.toolbarButtons addObject:thumbsButton];
+
+        leftButtonX += (iconButtonWidth + buttonSpacing);
         
         titleX += (iconButtonWidth + buttonSpacing);
         titleWidth -= (iconButtonWidth + buttonSpacing);
@@ -141,11 +169,14 @@
         CGRect flagButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
         flagButton.frame = flagButtonFrame;
         flagButton.exclusiveTouch = YES;
+        flagButton.enabled = NO;
+        flagButton.tag = NSIntegerMin;
         
         [self addSubview:flagButton];
-        titleWidth -= (iconButtonWidth + buttonSpacing);
+        gbBookmark = flagButton;
+        [self.toolbarButtons addObject:flagButton];
         
-        markButton = flagButton; markButton.enabled = NO; markButton.tag = NSIntegerMin;
+        titleWidth -= (iconButtonWidth + buttonSpacing);
         
         markImageN = [UIImage imageNamed:@"iconBookmarkDisabled"]; // N image
         markImageY = [UIImage imageNamed:@"iconBookmarkEnabled"]; // Y image
@@ -169,6 +200,8 @@
                     emailButton.exclusiveTouch = YES;
                     
                     [self addSubview:emailButton];
+                    [self.toolbarButtons addObject:emailButton];
+
                     titleWidth -= (iconButtonWidth + buttonSpacing);
                 }
             }
@@ -189,6 +222,8 @@
                 printButton.exclusiveTouch = YES;
                 
                 [self addSubview:printButton];
+                [self.toolbarButtons addObject:printButton];
+
                 titleWidth -= (iconButtonWidth + buttonSpacing);
             }
         }
@@ -204,6 +239,8 @@
             exportButton.exclusiveTouch = YES;
             
             [self addSubview:exportButton];
+            [self.toolbarButtons addObject:exportButton];
+
             titleWidth -= (iconButtonWidth + buttonSpacing);
         }
         
@@ -234,23 +271,33 @@
     return self;
 }
 
+-(NSMutableSet *)toolbarButtons;
+{
+    if (nil != _toolbarButtons) {
+        return _toolbarButtons;
+    }
+    
+    _toolbarButtons = [NSMutableSet new];
+    return _toolbarButtons;
+}
+
 - (void)setBookmarkState:(BOOL)state
 {
 #if (READER_BOOKMARKS == TRUE) // Option
     
-    if (state != markButton.tag) // Only if different state
+    if (state != self.gbBookmark.tag) // Only if different state
     {
         if (self.hidden == NO) // Only if toolbar is visible
         {
             UIImage *image = (state ? markImageY : markImageN);
             
-            [markButton replaceExistingImageWith:image animate:YES duration:0.25];
+            [self.gbBookmark replaceExistingImageWith:image animate:YES duration:0.25];
         }
         
-        markButton.tag = state; // Update bookmarked state tag
+        self.gbBookmark.tag = state; // Update bookmarked state tag
     }
     
-    if (markButton.enabled == NO) markButton.enabled = YES;
+    if (self.gbBookmark.enabled == NO) self.gbBookmark.enabled = YES;
     
 #endif // end of READER_BOOKMARKS Option
 }
@@ -259,16 +306,16 @@
 {
 #if (READER_BOOKMARKS == TRUE) // Option
     
-    if (markButton.tag != NSIntegerMin) // Valid tag
+    if (self.gbBookmark.tag != NSIntegerMin) // Valid tag
     {
-        BOOL state = markButton.tag; // Bookmarked state
+        BOOL state = self.gbBookmark.tag; // Bookmarked state
         
         UIImage *image = (state ? markImageY : markImageN);
         
-        [markButton replaceExistingImageWith:image animate:YES duration:0.25];
+        [self.gbBookmark replaceExistingImageWith:image animate:YES duration:0.25];
     }
     
-    if (markButton.enabled == NO) markButton.enabled = YES;
+    if (self.gbBookmark.enabled == NO) self.gbBookmark.enabled = YES;
     
 #endif // end of READER_BOOKMARKS Option
 }
@@ -314,6 +361,13 @@
 - (void)doneButtonTapped:(UIButton *)button
 {
 	[delegate tappedInToolbar:self doneButton:button];
+}
+
+- (void)helpButtonTapped:(UIButton *)button
+{
+    if ([delegate respondsToSelector:@selector(tappedInToolbar:helpButton:)]) {
+        [delegate tappedInToolbar:self helpButton:button];
+    }
 }
 
 - (void)thumbsButtonTapped:(UIButton *)button

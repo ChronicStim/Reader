@@ -46,6 +46,7 @@
 @property (nonatomic, weak, readwrite) id <ThumbsViewControllerDelegate> delegate;
 
 - (instancetype)initWithReaderDocument:(ReaderDocument *)object;
+-(void)checkIfHelpFirstViewShouldDisplayForViewKey:(NSString *)viewKey usingForce:(BOOL)useForce;
 
 @end
 

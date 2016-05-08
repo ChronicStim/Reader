@@ -12,9 +12,11 @@
 #import "ReaderDocument.h"
 #import "ReaderConstants.h"
 #import "ReaderMainPagebar.h"
+#import "PopupDisplayController.h"
+#import "HelpFirstView.h"
 
 @interface CPTReaderViewController ()
-< ReaderMainToolbarDelegate, ReaderMainPagebarDelegate, UIDocumentInteractionControllerDelegate, MFMailComposeViewControllerDelegate, ThumbsViewControllerDelegate >
+< ReaderMainToolbarDelegate, ReaderMainPagebarDelegate, UIDocumentInteractionControllerDelegate, MFMailComposeViewControllerDelegate, ThumbsViewControllerDelegate, PopupDisplayControllerDelegate >
 
 @property (nonatomic, readwrite, strong) UIPrintInteractionController *printInteraction;
 @property (nonatomic, readwrite, strong) UIDocumentInteractionController *documentInteraction;
@@ -25,6 +27,9 @@
 @property (nonatomic, readwrite, assign) NSInteger currentPage;
 @property (nonatomic, readwrite, assign) NSInteger minimumPage;
 @property (nonatomic, readwrite, assign) NSInteger maximumPage;
+@property (nonatomic, strong) PopupDisplayController *popupDisplayController;
+@property (nonatomic, strong) NSTimer *popupDelayTimer;
+@property (nonatomic, assign) BOOL deviceShaking;
 
 @end
 
@@ -35,6 +40,103 @@
     return NO;
 }
 
+-(void)viewDidAppear:(BOOL)animated;
+{
+    [super viewDidAppear:animated];
+    
+    
+    
+    [self checkIfHelpFirstViewShouldDisplayForViewKey:kHelpFirstViewKey usingForce:NO];
+}
+
+#pragma mark - Help Button System Methods
+
+-(PopupDisplayController *)popupDisplayController;
+{
+    if (nil != _popupDisplayController) {
+        return _popupDisplayController;
+    }
+    
+    _popupDisplayController = [[PopupDisplayController alloc] init];
+    [_popupDisplayController setDelegate:self];
+    return _popupDisplayController;
+}
+
+-(void)startPopupDelayTimer;
+{
+    //NSLog(@"Starting Delay Timer");
+    NSDate *fireDate = [[NSDate date] dateByAddingTimeInterval:5];
+    self.popupDelayTimer = [[NSTimer alloc] initWithFireDate:fireDate interval:5 target:self selector:@selector(beginPopupDisplay) userInfo:nil repeats:NO];
+    [[NSRunLoop currentRunLoop] addTimer:self.popupDelayTimer forMode:NSDefaultRunLoopMode];
+}
+
+-(void)beginPopupDisplay;
+{
+    if (nil != _popupDisplayController) {
+        [self performSelectorOnMainThread:@selector(beginPopupDisplayOnMainThread) withObject:nil waitUntilDone:NO];
+    }
+    [self.popupDelayTimer invalidate];
+    self.popupDelayTimer = nil;
+}
+
+-(void)beginPopupDisplayOnMainThread;
+{
+    //NSLog(@"Beginning popup display");
+    [self.popupDisplayController displayUsingTimerInterval:3];
+}
+
+-(void)killPopupDisplayProcesses;
+{
+    // If the delay timer is not NIL, then invalidate it to cancel the popups
+    //NSLog(@"Check if PopupDisplay processes need to be killed.");
+    
+    if (nil != _popupDelayTimer) {
+        //NSLog(@"Killing popupDelayTimer");
+        [self.popupDelayTimer invalidate];
+        _popupDelayTimer = nil;
+    }
+    
+    // If popups are actively being displayed, then terminate the display
+    if (nil != [self.popupDisplayController popupTimer]) {
+        //NSLog(@"Killing popups");
+        [self.popupDisplayController stopDisplayingPopups];
+    }
+}
+
+-(CGRect)locationOfCustomHelpButton;
+{
+    CGRect locationRect = CGRectZero;
+    for (UIGlossyButton *glossyButton in [self.mainToolbar.toolbarButtons allObjects]) {
+        if (glossyButton.tag == 5005) {
+            locationRect = [glossyButton convertRect:glossyButton.bounds toView:self.view];
+            break;
+        }
+    }
+    return locationRect;
+}
+
+-(void)checkIfHelpFirstViewShouldDisplayForViewKey:(NSString *)viewKey usingForce:(BOOL)useForce;
+{
+    // Display Help for view
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (nil == [defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake]) {
+        [defaults setObject:[NSNumber numberWithBool:YES] forKey:kHelpFirstViewKeyDisplayHelpOnShake];
+        [defaults synchronize];
+    }
+    BOOL showHelpOnShake = [[defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake] boolValue];
+    if (showHelpOnShake) {
+        CGRect helpInitiationPoint = [self locationOfCustomHelpButton];
+        if (CGRectEqualToRect(helpInitiationPoint, CGRectZero)) {
+            helpInitiationPoint = CGRectMake(CGRectGetMidX(self.view.bounds), 0, 1, 1);
+        }
+        HelpFirstView *helpFirstView = [HelpFirstView sharedHelpFirstView];
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            [helpFirstView displayHelpPopoverForViewKey:viewKey forceDisplay:useForce fromRect:helpInitiationPoint inView:self.view];
+        } else {
+            [helpFirstView displayHelpPopoverForViewKey:viewKey forceDisplay:useForce fromController:self];
+        }
+    }
+}
 
 #pragma mark - ReaderMainToolbarDelegate methods
 
@@ -176,6 +278,28 @@
 #endif // end of READER_BOOKMARKS Option
 }
 
+- (void)tappedInToolbar:(ReaderMainToolbar *)toolbar helpButton:(UIButton *)button;
+{
+#if (READER_ENABLE_HELP_BUTTON == TRUE) // Option
+    // Display Help for view
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (nil == [defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake]) {
+        [defaults setObject:[NSNumber numberWithBool:YES] forKey:kHelpFirstViewKeyDisplayHelpOnShake];
+        [defaults synchronize];
+    }
+    BOOL showHelpOnShake = [[defaults objectForKey:kHelpFirstViewKeyDisplayHelpOnShake] boolValue];
+    if (showHelpOnShake) {
+        CGRect helpInitiationPoint = [(UIButton *)button convertRect:[button bounds] toView:self.view];
+        HelpFirstView *helpFirstView = [HelpFirstView sharedHelpFirstView];
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromRect:helpInitiationPoint inView:self.view];
+        } else {
+            [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromController:self];
+        }
+    }
+#endif // end of READER_ENABLE_HELP_BUTTON Option
+}
+
 #pragma mark - MFMailComposeViewControllerDelegate methods
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
@@ -238,6 +362,36 @@
     [self.document archiveDocumentProperties]; // Save any ReaderDocument changes
     
     if (self.userInterfaceIdiom == UIUserInterfaceIdiomPad) if (self.printInteraction != nil) [self.printInteraction dismissAnimated:NO];
+}
+
+#pragma mark - Motion Methods
+
+- (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event
+{
+    if ([event subtype] == UIEventSubtypeMotionShake) {
+        self.deviceShaking = YES;
+        DDLogVerbose(@"Shaking has started. %@",[event description]);
+    }
+}
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event
+{
+    if ([event subtype] == UIEventSubtypeMotionShake) {
+        self.deviceShaking = NO;
+        DDLogVerbose(@"Shaking has ended. %@",[event description]);
+        
+        // Display Help for view
+        [self checkIfHelpFirstViewShouldDisplayForViewKey:kHelpFirstViewKey usingForce:YES];
+    }
+}
+
+- (void)motionCancelled:(UIEventSubtype)motion withEvent:(UIEvent *)event
+{
+    if ([event subtype] == UIEventSubtypeMotionShake) {
+        self.deviceShaking = NO;
+        DDLogVerbose(@"Shaking has cancelled. %@",[event description]);
+        
+    }
 }
 
 @end

@@ -40,12 +40,15 @@
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar printButton:(UIButton *)button;
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar emailButton:(UIButton *)button;
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar markButton:(UIButton *)button;
+@optional // Delegate protocols - optional
+- (void)tappedInToolbar:(ReaderMainToolbar *)toolbar helpButton:(UIButton *)button;
 
 @end
 
 @interface ReaderMainToolbar : UIXToolbarView
 
 @property (nonatomic, weak, readwrite) id <ReaderMainToolbarDelegate> delegate;
+@property (nonatomic, strong, readonly) NSMutableSet *toolbarButtons;
 
 - (instancetype)initWithFrame:(CGRect)frame;
 

@@ -31,6 +31,7 @@
 
 @property (nonatomic, readwrite, strong) UIGlossyButton *thumbsButton;
 @property (nonatomic, readwrite, strong) UIGlossyButton *markButton;
+@property (nonatomic, strong, readwrite) NSMutableSet *toolbarButtons;
 
 @end
 
@@ -43,20 +44,20 @@
 }
 #pragma mark - Constants
 
-#define BUTTON_X 8.0f
-#define BUTTON_Y 8.0f
+#define BUTTON_X READER_TOOLBAR_BUTTON_X
+#define BUTTON_Y READER_TOOLBAR_BUTTON_Y
 
-#define BUTTON_SPACE 8.0f
-#define BUTTON_HEIGHT 34.0f
+#define BUTTON_SPACE READER_TOOLBAR_BUTTON_SPACE
+#define BUTTON_HEIGHT READER_TOOLBAR_BUTTON_HEIGHT
 
-#define BUTTON_FONT_SIZE 15.0f
-#define TEXT_BUTTON_PADDING 24.0f
+#define BUTTON_FONT_SIZE READER_TOOLBAR_BUTTON_FONT_SIZE
+#define TEXT_BUTTON_PADDING READER_TOOLBAR_TEXT_BUTTON_PADDING
 
-#define SHOW_CONTROL_WIDTH 78.0f
-#define ICON_BUTTON_WIDTH 40.0f
+#define ICON_BUTTON_WIDTH READER_TOOLBAR_ICON_BUTTON_WIDTH
 
-#define TITLE_FONT_SIZE 19.0f
-#define TITLE_HEIGHT 28.0f
+#define TITLE_FONT_SIZE READER_TOOLBAR_TITLE_FONT_SIZE
+#define TITLE_HEIGHT READER_TOOLBAR_TITLE_HEIGHT
+
 
 #pragma mark - Properties
 
@@ -79,8 +80,6 @@
 #if (READER_FLAT_UI == TRUE) // Option
         self.backgroundColor = READER_TOOLBAR_PRIMARY_TINT;
 #else
-		UIImage *buttonH = [[UIImage imageNamed:@"Reader-Button-H"] stretchableImageWithLeftCapWidth:5 topCapHeight:0];
-		UIImage *buttonN = [[UIImage imageNamed:@"Reader-Button-N"] stretchableImageWithLeftCapWidth:5 topCapHeight:0];
         {
             self.backgroundColor = READER_TOOLBAR_PRIMARY_TINT;
             CAGradientLayer *layer = (CAGradientLayer *)self.layer;
@@ -99,21 +98,46 @@
 
 		CGFloat leftButtonX = BUTTON_X; // Left-side button start X position
 
-        UIGlossyButton *doneButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"iconDone"] highlighted:NO forTarget:self selector:@selector(doneButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-        iconButtonWidth = doneButton.bounds.size.width;
-        CGRect doneButtonRect = CGRectMake(leftButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
-        doneButton.frame = doneButtonRect;
-        doneButton.autoresizingMask = UIViewAutoresizingNone;
-        doneButton.exclusiveTouch = YES;
+#if (READER_ENABLE_HELP_BUTTON == TRUE) // Option
         
-        [self addSubview:doneButton];
+        UIGlossyButton *helpButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"Reader-iconInfo"] highlighted:NO forTarget:self selector:@selector(helpButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        iconButtonWidth = helpButton.bounds.size.width;
+        leftButtonX += (iconButtonWidth + buttonSpacing);  // Add the width of one button to position the help button in line with the help button from the ReaderMainToolbar
+        CGRect buttonRect = CGRectMake(leftButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+        helpButton.frame = buttonRect;
+        helpButton.autoresizingMask = UIViewAutoresizingNone;
+        helpButton.exclusiveTouch = YES;
+        helpButton.tag = 5005;
         
-        CGFloat rightButtonX = viewWidth; // Right-side buttons start X position
+        [self addSubview:helpButton];
+        [self.toolbarButtons addObject:helpButton];
 
-#if (READER_BOOKMARKS == TRUE) // Option
+        leftButtonX += (iconButtonWidth + buttonSpacing);
         
         titleX += (iconButtonWidth + buttonSpacing);
         titleWidth -= (iconButtonWidth + buttonSpacing);
+        
+#endif // end of READER_ENABLE_HELP_BUTTON Option
+        
+        UIGlossyButton *singlePageViewButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"iconSinglePageViewEnabled"] highlighted:NO forTarget:self selector:@selector(doneButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        iconButtonWidth = singlePageViewButton.bounds.size.width;
+        CGRect singlePageViewButtonRect = CGRectMake(leftButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+        singlePageViewButton.frame = singlePageViewButtonRect;
+        singlePageViewButton.autoresizingMask = UIViewAutoresizingNone;
+        singlePageViewButton.exclusiveTouch = YES;
+        
+        [self addSubview:singlePageViewButton];
+        [self.toolbarButtons addObject:singlePageViewButton];
+
+        leftButtonX += (iconButtonWidth + buttonSpacing);
+
+        titleX += (iconButtonWidth + buttonSpacing);
+        titleWidth -= (iconButtonWidth + buttonSpacing);
+        
+        /* This section needs to be reworked if its going to be implemented
+         CGFloat rightButtonX = viewWidth; // Right-side buttons start X position
+         
+#if (READER_BOOKMARKS == TRUE) // Option
         
         markImageN = [UIImage imageNamed:@"iconBookmarkDisabled"]; // N image
         markImageY = [UIImage imageNamed:@"iconBookmarkEnabled"]; // Y image
@@ -130,7 +154,6 @@
         
         self.markButton = flagButton;
         self.markButton.tag = 0;
-#endif
 
         titleX += (iconButtonWidth + buttonSpacing);
         titleWidth -= (iconButtonWidth + buttonSpacing);
@@ -150,7 +173,9 @@
         [self addSubview:newThumbButton];
         self.thumbsButton = newThumbButton;
         self.thumbsButton.tag = 1;
-
+#endif
+         */
+        
 		if (largeDevice == YES) // Show document filename in toolbar
 		{
 			CGRect titleRect = CGRectMake(titleX, BUTTON_Y, titleWidth, TITLE_HEIGHT);
@@ -176,6 +201,16 @@
 	}
 
 	return self;
+}
+
+-(NSMutableSet *)toolbarButtons;
+{
+    if (nil != _toolbarButtons) {
+        return _toolbarButtons;
+    }
+    
+    _toolbarButtons = [NSMutableSet new];
+    return _toolbarButtons;
 }
 
 -(UIImage *)imageForViewModeButton:(UIGlossyButton *)viewModeButton state:(BOOL)state;
@@ -237,6 +272,13 @@
 - (void)doneButtonTapped:(UIButton *)button
 {
 	[delegate tappedInToolbar:self doneButton:button];
+}
+
+- (void)helpButtonTapped:(UIButton *)button
+{
+    if ([delegate respondsToSelector:@selector(tappedInToolbar:helpButton:)]) {
+        [delegate tappedInToolbar:self helpButton:button];
+    }
 }
 
 @end
