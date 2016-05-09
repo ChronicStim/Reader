@@ -14,6 +14,8 @@
 #import "ReaderMainPagebar.h"
 #import "PopupDisplayController.h"
 #import "HelpFirstView.h"
+#import "MailMeObject.h"
+#import "MailGeneratorViewController.h"
 
 @interface CPTReaderViewController ()
 < ReaderMainToolbarDelegate, ReaderMainPagebarDelegate, UIDocumentInteractionControllerDelegate, MFMailComposeViewControllerDelegate, ThumbsViewControllerDelegate, PopupDisplayControllerDelegate >
@@ -238,29 +240,23 @@
     if (self.printInteraction != nil) [self.printInteraction dismissAnimated:YES];
     
     unsigned long long fileSize = [self.document.fileSize unsignedLongLongValue];
-    
-    if (fileSize < 15728640ull) // Check attachment size limit (15MB)
-    {
-        NSURL *fileURL = self.document.fileURL; NSString *fileName = self.document.fileName;
-        
-        NSData *attachment = [NSData dataWithContentsOfURL:fileURL options:(NSDataReadingMapped|NSDataReadingUncached) error:nil];
-        
-        if (attachment != nil) // Ensure that we have valid document file attachment data available
-        {
-            MFMailComposeViewController *mailComposer = [MFMailComposeViewController new];
-            
-            [mailComposer addAttachmentData:attachment mimeType:@"application/pdf" fileName:fileName];
-            
-            [mailComposer setSubject:fileName]; // Use the document file name for the subject
-            
-            mailComposer.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-            mailComposer.modalPresentationStyle = UIModalPresentationFormSheet;
-            
-            mailComposer.mailComposeDelegate = self; // MFMailComposeViewControllerDelegate
-            
-            [self presentViewController:mailComposer animated:YES completion:NULL];
-        }
+    NSString *fileSizeDisplay;
+    if ((fileSize / 1024) < 1) {
+        fileSizeDisplay = [NSString stringWithFormat:@"%llu kb", (fileSize / 1024)];
     }
+    else {
+        fileSizeDisplay = [NSString stringWithFormat:@"%llu MB", (fileSize / (1024 * 1024))];
+    }
+    NSString *filename = [self.document fileName];
+    NSString *subject = [NSString stringWithFormat:@"CPT Report: %@",[filename stringByDeletingPathExtension]];
+    
+    NSString *messageBody = [NSString stringWithFormat:@"Your report data has been exported as a PDF and attached to this e-mail. Filename = %@; Filesize = %@", filename,fileSizeDisplay];
+    
+    MailMeObject *newMailObject = [[MailMeObject alloc] initWithSubject:subject andMessageBody:messageBody usingHTML:YES inController:self];
+    
+    [newMailObject addAttachmentAtURL:self.document.fileURL mimeType:@"application/pdf" filename:filename];
+    
+    [self createMailWithMailMeObject:newMailObject];
 }
 
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar markButton:(UIButton *)button
@@ -398,5 +394,18 @@
         
     }
 }
+
+#pragma mark -
+#pragma mark MailComposer Methods
+
+-(void)createMailWithMailMeObject:(MailMeObject *)aMailMeObject {
+    
+    MailGeneratorViewController *newMailGenerator = [[MailGeneratorViewController alloc] initWithMailMeObject:aMailMeObject];
+    [newMailGenerator setModalTransitionStyle:UIModalTransitionStyleCrossDissolve];
+    [self presentViewController:newMailGenerator animated:NO completion:^{
+        
+    }];
+}
+
 
 @end
