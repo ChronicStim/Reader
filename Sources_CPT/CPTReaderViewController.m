@@ -46,10 +46,6 @@
 
 -(BOOL)prefersStatusBarHidden;
 {
-    UIInterfaceOrientation currentOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-    if (currentOrientation == UIInterfaceOrientationLandscapeRight || currentOrientation == UIInterfaceOrientationLandscapeLeft) {
-        return YES;
-    }
     return NO;
 }
 

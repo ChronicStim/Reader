@@ -800,9 +800,9 @@
 
 	if (self.printInteraction != nil) [self.printInteraction dismissAnimated:YES];
 
-	unsigned long long fileSize = [self.document.fileSize unsignedLongLongValue];
+//	unsigned long long fileSize = [self.document.fileSize unsignedLongLongValue];
 
-	if (fileSize < 15728640ull) // Check attachment size limit (15MB)
+//	if (fileSize < 15728640ull) // Check attachment size limit (15MB)
 	{
 		NSURL *fileURL = self.document.fileURL;
         NSString *fileName = self.document.fileName;

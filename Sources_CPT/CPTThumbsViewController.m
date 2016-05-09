@@ -21,9 +21,14 @@
 @implementation CPTThumbsViewController
 
 
-- (BOOL)prefersStatusBarHidden
+-(BOOL)prefersStatusBarHidden;
 {
     return NO;
+}
+
+-(UIStatusBarAnimation)preferredStatusBarUpdateAnimation;
+{
+    return UIStatusBarAnimationFade;
 }
 
 #pragma mark - Motion Methods
