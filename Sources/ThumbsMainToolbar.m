@@ -94,7 +94,8 @@
 
 		const CGFloat buttonSpacing = BUTTON_SPACE; //const CGFloat iconButtonWidth = ICON_BUTTON_WIDTH;
 
-		CGFloat titleX = BUTTON_X; CGFloat titleWidth = (viewWidth - (titleX + titleX));
+		CGFloat titleX = BUTTON_X;
+        CGFloat titleWidth = (viewWidth - (titleX + titleX));
 
 		CGFloat leftButtonX = BUTTON_X; // Left-side button start X position
 
@@ -148,7 +149,8 @@
         CGRect flagButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
         flagButton.frame = flagButtonFrame;
         flagButton.exclusiveTouch = YES;
-        
+        flagButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+
         [self addSubview:flagButton];
         titleWidth -= (iconButtonWidth + buttonSpacing);
         
@@ -167,7 +169,7 @@
         
         CGRect buttonRect = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
         newThumbButton.frame = buttonRect;
-        newThumbButton.autoresizingMask = UIViewAutoresizingNone;
+        newThumbButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
         newThumbButton.exclusiveTouch = YES;
         
         [self addSubview:newThumbButton];
@@ -186,13 +188,13 @@
 			titleLabel.font = [UIFont systemFontOfSize:TITLE_FONT_SIZE];
 			titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 			titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
-			titleLabel.textColor = [UIColor colorWithWhite:0.0f alpha:1.0f];
+			titleLabel.textColor = [UIColor colorWithWhite:1.0f alpha:1.0f];
 			titleLabel.backgroundColor = [UIColor clearColor];
 			titleLabel.adjustsFontSizeToFitWidth = YES;
-			titleLabel.minimumScaleFactor = 0.75f;
+			titleLabel.minimumScaleFactor = 0.25f;
 			titleLabel.text = title;
 #if (READER_FLAT_UI == FALSE) // Option
-			titleLabel.shadowColor = [UIColor colorWithWhite:0.65f alpha:1.0f];
+			titleLabel.shadowColor = [UIColor colorWithWhite:0.25f alpha:1.0f];
 			titleLabel.shadowOffset = CGSizeMake(0.0f, 1.0f);
 #endif // end of READER_FLAT_UI Option
 

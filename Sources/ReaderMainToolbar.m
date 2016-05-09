@@ -171,7 +171,8 @@
         flagButton.exclusiveTouch = YES;
         flagButton.enabled = NO;
         flagButton.tag = NSIntegerMin;
-        
+        flagButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+
         [self addSubview:flagButton];
         gbBookmark = flagButton;
         [self.toolbarButtons addObject:flagButton];
@@ -198,7 +199,8 @@
                     CGRect emailButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
                     emailButton.frame = emailButtonFrame;
                     emailButton.exclusiveTouch = YES;
-                    
+                    emailButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+
                     [self addSubview:emailButton];
                     [self.toolbarButtons addObject:emailButton];
 
@@ -220,7 +222,8 @@
                 CGRect printButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
                 printButton.frame = printButtonFrame;
                 printButton.exclusiveTouch = YES;
-                
+                printButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+
                 [self addSubview:printButton];
                 [self.toolbarButtons addObject:printButton];
 
@@ -237,7 +240,8 @@
             CGRect exportButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
             exportButton.frame = exportButtonFrame;
             exportButton.exclusiveTouch = YES;
-            
+            exportButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+
             [self addSubview:exportButton];
             [self.toolbarButtons addObject:exportButton];
 

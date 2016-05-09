@@ -35,11 +35,6 @@
 
 @implementation CPTReaderViewController
 
-- (BOOL)prefersStatusBarHidden
-{
-    return NO;
-}
-
 -(void)viewDidAppear:(BOOL)animated;
 {
     [super viewDidAppear:animated];
@@ -47,6 +42,20 @@
     
     
     [self checkIfHelpFirstViewShouldDisplayForViewKey:kHelpFirstViewKey usingForce:NO];
+}
+
+-(BOOL)prefersStatusBarHidden;
+{
+    UIInterfaceOrientation currentOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (currentOrientation == UIInterfaceOrientationLandscapeRight || currentOrientation == UIInterfaceOrientationLandscapeLeft) {
+        return YES;
+    }
+    return NO;
+}
+
+-(UIStatusBarAnimation)preferredStatusBarUpdateAnimation;
+{
+    return UIStatusBarAnimationFade;
 }
 
 #pragma mark - Help Button System Methods
