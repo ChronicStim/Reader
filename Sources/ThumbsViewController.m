@@ -300,7 +300,11 @@
     if (showHelpOnShake) {
         CGRect helpInitiationPoint = [(UIButton *)button convertRect:[button bounds] toView:self.view];
         HelpFirstView *helpFirstView = [HelpFirstView sharedHelpFirstView];
-        [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromRect:helpInitiationPoint inView:self.view];
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromRect:helpInitiationPoint inView:self.view];
+        } else {
+            [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromController:self];
+        }
     }
 #endif // end of READER_ENABLE_HELP_BUTTON Option
 }
