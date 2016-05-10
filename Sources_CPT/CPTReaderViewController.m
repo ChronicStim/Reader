@@ -185,7 +185,13 @@
     
     self.documentInteraction.delegate = self; // UIDocumentInteractionControllerDelegate
     
-    [self.documentInteraction presentOpenInMenuFromRect:button.bounds inView:button animated:YES];
+    if (![self.documentInteraction presentOpenInMenuFromRect:button.bounds inView:button animated:YES]) {
+        NSString *title = NSLocalizedStringFromTable(@"No Compatible Apps", @"PainTracker", @"No Compatible Apps");
+        NSString *message = NSLocalizedStringFromTable(@"You do not have any apps on your device that have registered for opening this type of file.", @"PainTracker", @"You do not have any apps on your device that have registered for opening this type of file.");
+        UIAlertView *alertView = [UIAlertView bk_alertViewWithTitle:title message:message];
+        [alertView bk_setCancelButtonWithTitle:NSLocalizedStringFromTable(@"OK", @"PainTracker", @"OK") handler:nil];
+        [alertView show];
+    }
 }
 
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar printButton:(UIButton *)button
