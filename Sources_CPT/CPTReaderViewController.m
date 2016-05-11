@@ -244,24 +244,43 @@
     if ([MFMailComposeViewController canSendMail] == NO) return;
     
     if (self.printInteraction != nil) [self.printInteraction dismissAnimated:YES];
-    
-    unsigned long long fileSize = [self.document.fileSize unsignedLongLongValue];
-    NSString *fileSizeDisplay;
-    if ((fileSize / 1024) < 1) {
-        fileSizeDisplay = [NSString stringWithFormat:@"%llu kb", (fileSize / 1024)];
+
+    // Get the file size.
+    double fileSize = [self.document.fileSize doubleValue];
+    NSString *fileSizeDisplay = [NSString string];
+    if ((fileSize / (double)1024) > 1) {
+        fileSizeDisplay = [NSString stringWithFormat:@"%.1f MB", (fileSize / ((double)1024 * (double)1024))];
     }
     else {
-        fileSizeDisplay = [NSString stringWithFormat:@"%llu MB", (fileSize / (1024 * 1024))];
+        fileSizeDisplay = [NSString stringWithFormat:@"%.1f kb", (fileSize / (double)1024)];
     }
-    NSString *filename = [self.document fileName];
-    NSString *subject = [NSString stringWithFormat:@"CPT Report: %@",[filename stringByDeletingPathExtension]];
     
-    NSString *messageBody = [NSString stringWithFormat:@"Your report data has been exported as a PDF and attached to this e-mail. Filename = %@; Filesize = %@", filename,fileSizeDisplay];
+    // Filename
+    NSString *reportFilename = [self.document fileName];
     
+    // File type
+    NSString *pathExtension = [reportFilename pathExtension];
+    NSString *exportedFileTypeDisplay;
+    if (nil == pathExtension || 0 == [pathExtension length]) {
+        exportedFileTypeDisplay = @"";
+    }
+    else {
+        exportedFileTypeDisplay = [NSString stringWithFormat:@" as a %@",[pathExtension uppercaseString]];
+    }
+    
+    // Create subject line
+    NSString *subject = [NSString stringWithFormat:@"CPT Report: %@",[reportFilename stringByDeletingPathExtension]];
+    
+    // Create message body
+    NSString *messageBody = [NSString stringWithFormat:@"Your report data has been exported%@ and attached to this e-mail.\n  File Info:\n     File name = %@ \n     File size = %@", exportedFileTypeDisplay, reportFilename,fileSizeDisplay];
+    
+    // Create MailMeObject
     MailMeObject *newMailObject = [[MailMeObject alloc] initWithSubject:subject andMessageBody:messageBody usingHTML:YES inController:self];
     
-    [newMailObject addAttachmentAtURL:self.document.fileURL mimeType:@"application/pdf" filename:filename];
+    // Add the attachment
+    [newMailObject addAttachmentAtURL:self.document.fileURL mimeType:@"application/pdf" filename:reportFilename];
     
+    // Create the email
     [self createMailWithMailMeObject:newMailObject];
 }
 
