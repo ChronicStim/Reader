@@ -272,6 +272,8 @@
 	[[ReaderThumbQueue sharedInstance] cancelOperationsWithGUID:self.document.guid];
 
 	[[ReaderThumbCache sharedInstance] removeAllObjects]; // Empty the thumb cache
+    
+    [ReaderThumbCache removeThumbCacheWithGUID:self.document.guid]; // Delete the cached image files from disk
 
 	if ([delegate respondsToSelector:@selector(dismissReaderViewController:)] == YES)
 	{
