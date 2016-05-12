@@ -16,6 +16,7 @@
 #import "HelpFirstView.h"
 #import "MailMeObject.h"
 #import "MailGeneratorViewController.h"
+#import "PainTrackerAppDelegate.h"
 
 @interface CPTReaderViewController ()
 < ReaderMainToolbarDelegate, ReaderMainPagebarDelegate, UIDocumentInteractionControllerDelegate, MFMailComposeViewControllerDelegate, ThumbsViewControllerDelegate, PopupDisplayControllerDelegate >
@@ -245,6 +246,11 @@
     
     if (self.printInteraction != nil) [self.printInteraction dismissAnimated:YES];
 
+    // App Version
+    PainTrackerAppDelegate *appDelegate = (PainTrackerAppDelegate *)[[UIApplication sharedApplication] delegate];
+    BOOL isLiteVersion = [appDelegate checkIfLiteVersion];
+    NSString *appVersion = isLiteVersion ? @"LITE" : @"PRO";
+    
     // Get the file size.
     double fileSize = [self.document.fileSize doubleValue];
     NSString *fileSizeDisplay = [NSString string];
@@ -272,7 +278,7 @@
     NSString *subject = [NSString stringWithFormat:@"CPT Report: %@",[reportFilename stringByDeletingPathExtension]];
     
     // Create message body
-    NSString *messageBody = [NSString stringWithFormat:@"Your report data has been exported%@ and attached to this e-mail.\n  File Info:\n     File name = %@ \n     File size = %@", exportedFileTypeDisplay, reportFilename,fileSizeDisplay];
+    NSString *messageBody = [NSString stringWithFormat:@"<body><p>Your data from Chronic Pain Tracker %@ has just been exported%@. It is now attached to this email.</p><p>File Info:<ul><li>File Name:  %@</li><li>File Size:  %@</li><li>File Type:  %@</li></ul></p></body>", appVersion, exportedFileTypeDisplay, reportFilename,fileSizeDisplay, [pathExtension uppercaseString]];
     
     // Create MailMeObject
     MailMeObject *newMailObject = [[MailMeObject alloc] initWithSubject:subject andMessageBody:messageBody usingHTML:YES inController:self];
