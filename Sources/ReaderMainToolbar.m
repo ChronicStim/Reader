@@ -27,6 +27,7 @@
 #import "ReaderMainToolbar.h"
 #import "ReaderDocument.h"
 #import "UIGlossyButton.h"
+#import "DropBoxSyncController.h"
 
 #import <MessageUI/MessageUI.h>
 
@@ -248,6 +249,23 @@
             titleWidth -= (iconButtonWidth + buttonSpacing);
         }
         
+        if ([[DropBoxSyncController sharedDropBoxSyncController] dropboxIsLinked])  // Dropbox is enabled
+        {
+            rightButtonX -= (iconButtonWidth + buttonSpacing); // Next position
+            
+            UIGlossyButton *exportButton = [UIGlossyButton glossyButtonWithTitle:nil image:[UIImage imageNamed:@"iconExport2Dropbox"] highlighted:NO forTarget:self selector:@selector(exportToDropboxButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+            iconButtonWidth = exportButton.bounds.size.width;
+            CGRect exportButtonFrame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+            exportButton.frame = exportButtonFrame;
+            exportButton.exclusiveTouch = YES;
+            exportButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+            
+            [self addSubview:exportButton];
+            [self.toolbarButtons addObject:exportButton];
+            
+            titleWidth -= (iconButtonWidth + buttonSpacing);
+        }
+        
         if (largeDevice == YES) // Show document filename in toolbar
         {
             CGRect titleRect = CGRectMake(titleX, BUTTON_Y, titleWidth, TITLE_HEIGHT);
@@ -382,6 +400,11 @@
 - (void)exportButtonTapped:(UIButton *)button
 {
 	[delegate tappedInToolbar:self exportButton:button];
+}
+
+- (void)exportToDropboxButtonTapped:(UIButton *)button
+{
+    [delegate tappedInToolbar:self exportToDropboxButton:button];
 }
 
 - (void)printButtonTapped:(UIButton *)button

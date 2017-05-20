@@ -751,6 +751,10 @@
 	[self.documentInteraction presentOpenInMenuFromRect:button.bounds inView:button animated:YES];
 }
 
+- (void)tappedInToolbar:(ReaderMainToolbar *)toolbar exportToDropboxButton:(UIButton *)button
+{
+}
+
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar printButton:(UIButton *)button
 {
 	if ([UIPrintInteractionController isPrintingAvailable] == YES)

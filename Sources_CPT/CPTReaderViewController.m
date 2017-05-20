@@ -17,9 +17,13 @@
 #import "MailMeObject.h"
 #import "MailGeneratorViewController.h"
 #import "PainTrackerAppDelegate.h"
+#import "DropBoxSyncController.h"
+#import "MBProgressHUD+Custom.h"
 
 @interface CPTReaderViewController ()
-< ReaderMainToolbarDelegate, ReaderMainPagebarDelegate, UIDocumentInteractionControllerDelegate, MFMailComposeViewControllerDelegate, ThumbsViewControllerDelegate, PopupDisplayControllerDelegate >
+< ReaderMainToolbarDelegate, ReaderMainPagebarDelegate, UIDocumentInteractionControllerDelegate, MFMailComposeViewControllerDelegate, ThumbsViewControllerDelegate, PopupDisplayControllerDelegate, MBProgressHUDDelegate >
+{
+}
 
 @property (nonatomic, readwrite, strong) UIPrintInteractionController *printInteraction;
 @property (nonatomic, readwrite, strong) UIDocumentInteractionController *documentInteraction;
@@ -174,6 +178,20 @@
     [self presentViewController:thumbsViewController animated:NO completion:NULL];
     
 #endif // end of READER_ENABLE_THUMBS Option
+}
+
+- (void)tappedInToolbar:(ReaderMainToolbar *)toolbar exportToDropboxButton:(UIButton *)button
+{
+    if (self.printInteraction != nil) [self.printInteraction dismissAnimated:YES];
+    
+    NSURL *fileURL = self.document.fileURL; // Document file URL
+    
+    if ([[DropBoxSyncController sharedDropBoxSyncController] dropboxIsLinkedOrGiveOptionToLink:YES fromViewController:self]) {
+        
+        [[DropBoxSyncController sharedDropBoxSyncController] syncFileAtFilePath:fileURL.path];
+        
+        [Flurry logEvent:@"Report Syncd to Dropbox"];
+    }
 }
 
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar exportButton:(UIButton *)button
@@ -437,6 +455,5 @@
         
     }];
 }
-
 
 @end
