@@ -182,16 +182,21 @@
 
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar exportToDropboxButton:(UIButton *)button
 {
-    if (self.printInteraction != nil) [self.printInteraction dismissAnimated:YES];
-    
-    NSURL *fileURL = self.document.fileURL; // Document file URL
-    
-    if ([[DropBoxSyncController sharedDropBoxSyncController] dropboxIsLinkedOrGiveOptionToLink:YES fromViewController:self]) {
+    __weak __typeof__(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        __typeof__(self) strongSelf = weakSelf;
         
-        [[DropBoxSyncController sharedDropBoxSyncController] syncFileAtFilePath:fileURL.path];
+        if (strongSelf.printInteraction != nil) [strongSelf.printInteraction dismissAnimated:YES];
         
-        [Flurry logEvent:@"Report Syncd to Dropbox"];
-    }
+        NSURL *fileURL = strongSelf.document.fileURL; // Document file URL
+        
+        if ([[DropBoxSyncController sharedDropBoxSyncController] dropboxIsLinkedOrGiveOptionToLink:YES fromViewController:strongSelf]) {
+            
+            [[DropBoxSyncController sharedDropBoxSyncController] syncFileAtFilePath:fileURL.path];
+            
+            [Flurry logEvent:@"Report Syncd to Dropbox"];
+        }
+    });
 }
 
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar exportButton:(UIButton *)button
