@@ -194,7 +194,6 @@
             
             [[DropBoxSyncController sharedDropBoxSyncController] syncFileAtFilePath:fileURL.path];
             
-            [Flurry logEvent:@"Report Syncd to Dropbox"];
         }
     });
 }
