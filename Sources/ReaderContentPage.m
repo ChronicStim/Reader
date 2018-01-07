@@ -529,6 +529,19 @@
 
 #endif // end of READER_DISABLE_RETINA Option
 
+-(CGRect)contentPageBounds;
+{
+    CGRect __block pageBounds = CGRectNull;
+    
+    __weak __typeof__(self) weakSelf = self;
+    runOnMainQueueWithoutDeadlocking(^{
+        __typeof__(self) strongSelf = weakSelf;
+        pageBounds = strongSelf.bounds;
+    });
+    
+    return pageBounds;
+}
+
 #pragma mark - CATiledLayer delegate methods
 
 - (void)drawLayer:(CATiledLayer *)layer inContext:(CGContextRef)context
@@ -540,10 +553,11 @@
 	CGContextFillRect(context, CGContextGetClipBoundingBox(context)); // Fill
 
 	//NSLog(@"%s %@", __FUNCTION__, NSStringFromCGRect(CGContextGetClipBoundingBox(context)));
+    CGRect contentPageBounds = [readerContentPage contentPageBounds];
+    
+	CGContextTranslateCTM(context, 0.0f, contentPageBounds.size.height); CGContextScaleCTM(context, 1.0f, -1.0f);
 
-	CGContextTranslateCTM(context, 0.0f, self.bounds.size.height); CGContextScaleCTM(context, 1.0f, -1.0f);
-
-	CGContextConcatCTM(context, CGPDFPageGetDrawingTransform(_PDFPageRef, kCGPDFCropBox, self.bounds, 0, true));
+	CGContextConcatCTM(context, CGPDFPageGetDrawingTransform(_PDFPageRef, kCGPDFCropBox, contentPageBounds, 0, true));
 
 	//CGContextSetRenderingIntent(context, kCGRenderingIntentDefault); CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
 
