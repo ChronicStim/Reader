@@ -193,8 +193,6 @@
         if ([[DropBoxSyncController sharedDropBoxSyncController] dropboxIsLinkedOrGiveOptionToLink:YES fromViewController:strongSelf]) {
             
             [[DropBoxSyncController sharedDropBoxSyncController] syncFileAtFilePath:fileURL.path];
-            
-            [Flurry logEvent:@"Report Syncd to Dropbox"];
         }
     });
 }
