@@ -182,17 +182,6 @@
 	[super viewDidDisappear:animated];
 }
 
-- (void)viewDidUnload
-{
-#ifdef DEBUG
-	NSLog(@"%s", __FUNCTION__);
-#endif
-
-	mainToolbar = nil; theThumbsView = nil;
-
-	[super viewDidUnload];
-}
-
 - (BOOL)prefersStatusBarHidden
 {
 	return NO;
@@ -201,11 +190,6 @@
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
 	return UIStatusBarStyleLightContent;
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-	return YES;
 }
 
 /*
