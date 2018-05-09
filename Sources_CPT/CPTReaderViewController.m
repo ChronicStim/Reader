@@ -269,8 +269,7 @@
     if (self.printInteraction != nil) [self.printInteraction dismissAnimated:YES];
 
     // App Version
-    PainTrackerAppDelegate *appDelegate = (PainTrackerAppDelegate *)[[UIApplication sharedApplication] delegate];
-    BOOL isLiteVersion = [appDelegate checkIfLiteVersion];
+    BOOL isLiteVersion = [[GlobalDefaults sharedGlobalDefaults] checkIfLiteVersion];
     NSString *appVersion = isLiteVersion ? @"LITE" : @"PRO";
     
     // Get the file size.
