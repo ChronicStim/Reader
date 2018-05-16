@@ -541,15 +541,32 @@
 
 	//NSLog(@"%s %@", __FUNCTION__, NSStringFromCGRect(CGContextGetClipBoundingBox(context)));
 
-	CGContextTranslateCTM(context, 0.0f, self.bounds.size.height); CGContextScaleCTM(context, 1.0f, -1.0f);
+    CGRect viewBounds = [self getViewBoundsOnMainThread];
+    
+	CGContextTranslateCTM(context, 0.0f, viewBounds.size.height); CGContextScaleCTM(context, 1.0f, -1.0f);
 
-	CGContextConcatCTM(context, CGPDFPageGetDrawingTransform(_PDFPageRef, kCGPDFCropBox, self.bounds, 0, true));
+	CGContextConcatCTM(context, CGPDFPageGetDrawingTransform(_PDFPageRef, kCGPDFCropBox, viewBounds, 0, true));
 
 	//CGContextSetRenderingIntent(context, kCGRenderingIntentDefault); CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
 
 	CGContextDrawPDFPage(context, _PDFPageRef); // Render the PDF page into the context
 
 	if (readerContentPage != nil) readerContentPage = nil; // Release self
+}
+
+-(CGRect)getViewBoundsOnMainThread;
+{
+    CGRect __block viewBounds = CGRectZero;
+    
+    if ([[NSThread currentThread] isMainThread]) {
+        viewBounds = self.bounds;
+    } else {
+        __weak __typeof__(self) weakSelf = self;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            viewBounds = weakSelf.bounds;
+        });
+    }
+    return viewBounds;
 }
 
 @end
