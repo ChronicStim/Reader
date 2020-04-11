@@ -452,7 +452,13 @@
 -(void)createMailWithMailMeObject:(MailMeObject *)aMailMeObject {
     
     MailGeneratorViewController *newMailGenerator = [[MailGeneratorViewController alloc] initWithMailMeObject:aMailMeObject];
+    [newMailGenerator setModalPresentationStyle:UIModalPresentationFullScreen];
     [newMailGenerator setModalTransitionStyle:UIModalTransitionStyleCrossDissolve];
+    if (@available(iOS 13.0, *)) {
+        [newMailGenerator setModalInPresentation:YES];
+    } else {
+        // Fallback on earlier versions
+    }
     [self presentViewController:newMailGenerator animated:NO completion:^{
         
     }];
