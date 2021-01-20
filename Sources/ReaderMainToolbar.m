@@ -152,8 +152,6 @@
         [self addSubview:thumbsButton];
         [self.toolbarButtons addObject:thumbsButton];
 
-        leftButtonX += (iconButtonWidth + buttonSpacing);
-        
         titleX += (iconButtonWidth + buttonSpacing);
         titleWidth -= (iconButtonWidth + buttonSpacing);
         

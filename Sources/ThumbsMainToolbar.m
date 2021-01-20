@@ -130,8 +130,6 @@
         [self addSubview:singlePageViewButton];
         [self.toolbarButtons addObject:singlePageViewButton];
 
-        leftButtonX += (iconButtonWidth + buttonSpacing);
-
         titleX += (iconButtonWidth + buttonSpacing);
         titleWidth -= (iconButtonWidth + buttonSpacing);
         

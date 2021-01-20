@@ -273,7 +273,7 @@
     
     // Get the file size.
     double fileSize = [self.document.fileSize doubleValue];
-    NSString *fileSizeDisplay = [NSString string];
+    NSString *fileSizeDisplay = nil;
     if ((fileSize / (double)1024) > 1) {
         fileSizeDisplay = [NSString stringWithFormat:@"%.1f MB", (fileSize / ((double)1024 * (double)1024))];
     }
