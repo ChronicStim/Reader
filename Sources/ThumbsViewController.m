@@ -182,17 +182,6 @@
 	[super viewDidDisappear:animated];
 }
 
-- (void)viewDidUnload
-{
-#ifdef DEBUG
-	NSLog(@"%s", __FUNCTION__);
-#endif
-
-	mainToolbar = nil; theThumbsView = nil;
-
-	[super viewDidUnload];
-}
-
 - (BOOL)prefersStatusBarHidden
 {
 	return NO;
@@ -203,11 +192,15 @@
 	return UIStatusBarStyleLightContent;
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations;
 {
-	return YES;
+    return (UIInterfaceOrientationMaskAll);
 }
 
+-(BOOL)shouldAutorotate;
+{
+    return YES;
+}
 /*
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
