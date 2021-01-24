@@ -434,23 +434,9 @@
 - (void)viewDidDisappear:(BOOL)animated
 {
 	[super viewDidDisappear:animated];
-}
 
-- (void)viewDidUnload
-{
-#ifdef DEBUG
-	NSLog(@"%s", __FUNCTION__);
-#endif
-
-	_mainToolbar = nil; _mainPagebar = nil;
-
-	theScrollView = nil; contentViews = nil; lastHideTime = nil;
-
-	_documentInteraction = nil; _printInteraction = nil;
-
-	lastAppearSize = CGSizeZero; _currentPage = 0;
-
-	[super viewDidUnload];
+    lastAppearSize = CGSizeZero;
+    _currentPage = 0;
 }
 
 - (BOOL)prefersStatusBarHidden
@@ -463,9 +449,14 @@
 	return UIStatusBarStyleLightContent;
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations;
 {
-	return YES;
+    return (UIInterfaceOrientationMaskAll);
+}
+
+-(BOOL)shouldAutorotate;
+{
+    return YES;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
