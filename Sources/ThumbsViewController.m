@@ -293,7 +293,7 @@
     if (showHelpOnShake) {
         CGRect helpInitiationPoint = [(UIButton *)button convertRect:[button bounds] toView:self.view];
         HelpFirstView *helpFirstView = [HelpFirstView sharedHelpFirstView];
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
             [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromRect:helpInitiationPoint inView:self.view];
         } else {
             [helpFirstView displayHelpPopoverForViewKey:kHelpFirstViewKey forceDisplay:YES fromController:self];
@@ -442,7 +442,7 @@
             helpInitiationPoint = CGRectMake(CGRectGetMidX(self.view.bounds), 0, 1, 1);
         }
         HelpFirstView *helpFirstView = [HelpFirstView sharedHelpFirstView];
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
             [helpFirstView displayHelpPopoverForViewKey:viewKey forceDisplay:useForce fromRect:helpInitiationPoint inView:self.view];
         } else {
             [helpFirstView displayHelpPopoverForViewKey:viewKey forceDisplay:useForce fromController:self];
