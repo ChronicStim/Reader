@@ -459,24 +459,32 @@
     return YES;
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
-	if (self.userInterfaceIdiom == UIUserInterfaceIdiomPad) if (self.printInteraction != nil) [self.printInteraction dismissAnimated:NO];
+    __weak __typeof__(self) weakSelf = self;
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        __typeof__(self) strongSelf = weakSelf;
+        
+        if (strongSelf.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+            if (strongSelf.printInteraction != nil) {
+                [strongSelf.printInteraction dismissAnimated:NO];
+            }
+        }
+        strongSelf->ignoreDidScroll = YES;
 
-	ignoreDidScroll = YES;
-}
+        if (CGSizeEqualToSize(strongSelf->theScrollView.contentSize, CGSizeZero) == false)
+        {
+            [strongSelf updateContentViews:strongSelf->theScrollView];
+            strongSelf->lastAppearSize = CGSizeZero;
+        }
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
-{
-	if (CGSizeEqualToSize(theScrollView.contentSize, CGSizeZero) == false)
-	{
-		[self updateContentViews:theScrollView]; lastAppearSize = CGSizeZero;
-	}
-}
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        __typeof__(self) strongSelf = weakSelf;
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-	ignoreDidScroll = NO;
+        strongSelf->ignoreDidScroll = NO;
+    }];
+    
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }
 
 - (void)didReceiveMemoryWarning
